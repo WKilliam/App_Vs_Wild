@@ -9,6 +9,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
@@ -35,6 +37,7 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compass);
         //récupération de l'id pour l'attribué a la variable ressourceImageCompass
@@ -43,10 +46,7 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
         mySensorManager =(SensorManager)getSystemService(SENSOR_SERVICE);
 
     }
-
-    /**
-     *
-     */
+    
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     protected void onResume()
     {
@@ -57,9 +57,6 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
                 SensorManager.SENSOR_DELAY_GAME);
     }
 
-    /**
-     *
-     */
     @Override
     protected void onPause(){
         super.onPause();
@@ -96,7 +93,7 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
                 myGeomagnetic[1] = alpla*myGeomagnetic[1]+(1-alpla)*event.values[1];
                 myGeomagnetic[2] = alpla*myGeomagnetic[2]+(1-alpla)*event.values[2];
             }
-            
+
             float R[] = new float[9];
             float I[] = new float[9];
             boolean success = SensorManager.getRotationMatrix(R,I, myGravity,myGeomagnetic);

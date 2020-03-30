@@ -15,63 +15,95 @@ import android.widget.ImageView;
 
 public class CompassActivity extends AppCompatActivity implements SensorEventListener {
 
-    private ImageView imageCompass;
-    private float[] mGravity = new float[3];
-    private float[] mGeomagnetic = new float[3];
+    // cette variable repressente l'image du compas
+    private ImageView ressourceImageCompass;
+    // cette variable représente un tableau de float de taille max 3 pour la gravité
+    private float[] myGravity = new float[3];
+    // cette variable représente un tableau de float de taille max 3 pour la geometrie
+    private float[] myGeomagnetic = new float[3];
+    // cette variable représente l'angle pour le compas
     private float azimuth = 0f;
-    private float currecAzimuth = 0f;
-    private SensorManager mSensorManager;
+    // cette variable représente la correction à apporté a l'azimuth
+    private float correctionAzimuth = 0f;
+    // cette variable représente la l'état sensoriel du telephone
+    private SensorManager mySensorManager;
 
+
+    /**
+     * Activité de la page
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compass);
-
-        imageCompass = (ImageView) findViewById(R.id.compas);
-        mSensorManager =(SensorManager)getSystemService(SENSOR_SERVICE);
+        //récupération de l'id pour l'attribué a la variable ressourceImageCompass
+        ressourceImageCompass = findViewById(R.id.compas);
+        //récupéretion de l'etat sensoriel du téléphone
+        mySensorManager =(SensorManager)getSystemService(SENSOR_SERVICE);
 
     }
 
+    /**
+     *
+     */
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    protected void oResume()
+    protected void onResume()
     {
         super.onResume();
-        mSensorManager.registerListener(this,mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+        mySensorManager.registerListener(this, mySensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
                 SensorManager.SENSOR_DELAY_GAME);
-        mSensorManager.registerListener(this,mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+        mySensorManager.registerListener(this, mySensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
                 SensorManager.SENSOR_DELAY_GAME);
     }
 
+    /**
+     *
+     */
     @Override
     protected void onPause(){
         super.onPause();
-        mSensorManager.unregisterListener(this);
+        mySensorManager.unregisterListener(this);
     }
 
+    /**
+     * Cette surcharge de méthode permet de mettre a jour les informations de l'état sensorielle du téléphone
+     * @param event
+     */
     @Override
     public void onSensorChanged(SensorEvent event) {
         final float alpla = 0.97f;
+        /**
+         * Syncronise l'activity actuelle avec l'état sensorielle
+         */
         synchronized (this)
         {
+            /**
+             * condition comparant le type de sensor si TYPE_ACCELEROMETER (l'accélérometre)
+             */
             if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
             {
-                mGravity[0] = alpla*mGravity[0]+(1-alpla)*event.values[0];
-                mGravity[1] = alpla*mGravity[1]+(1-alpla)*event.values[1];
-                mGravity[2] = alpla*mGravity[2]+(1-alpla)*event.values[2];
+                myGravity[0] = alpla* myGravity[0]+(1-alpla)*event.values[0];
+                myGravity[1] = alpla* myGravity[1]+(1-alpla)*event.values[1];
+                myGravity[2] = alpla* myGravity[2]+(1-alpla)*event.values[2];
             }
+            /**
+             * condition comparant le type de sensor si TYPE_MAGNETIC_FIELD ( magnétique )
+             */
             if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
             {
-                mGeomagnetic[0] = alpla*mGeomagnetic[0]+(1-alpla)*event.values[0];
-                mGeomagnetic[1] = alpla*mGeomagnetic[1]+(1-alpla)*event.values[1];
-                mGeomagnetic[2] = alpla*mGeomagnetic[2]+(1-alpla)*event.values[2];
+                myGeomagnetic[0] = alpla*myGeomagnetic[0]+(1-alpla)*event.values[0];
+                myGeomagnetic[1] = alpla*myGeomagnetic[1]+(1-alpla)*event.values[1];
+                myGeomagnetic[2] = alpla*myGeomagnetic[2]+(1-alpla)*event.values[2];
             }
-
+            
             float R[] = new float[9];
             float I[] = new float[9];
-            boolean success = SensorManager.getRotationMatrix(R,I,mGravity,mGeomagnetic);
+            boolean success = SensorManager.getRotationMatrix(R,I, myGravity,myGeomagnetic);
 
-
+            /**
+             * condition pour modifié l'animation en fonction de l'angle
+             */
             if(success)
             {
                 float orientation[] = new float[3];
@@ -79,20 +111,20 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
                 azimuth = (float)Math.toDegrees(orientation[0]);
                 azimuth = (azimuth+360)%360;
 
-                Animation animation = new RotateAnimation(-currecAzimuth,
+                Animation animation = new RotateAnimation(-correctionAzimuth,
                         -azimuth,
                         Animation.RELATIVE_TO_SELF,
                         0.5f,
                         Animation.RELATIVE_TO_SELF,
                         0.5f);
 
-                currecAzimuth = azimuth;
+                correctionAzimuth = azimuth;
 
                 animation.setDuration(500);
                 animation.setRepeatCount(0);
                 animation.setFillAfter(true);
 
-                imageCompass.startAnimation(animation);
+                ressourceImageCompass.startAnimation(animation);
             }
         }
     }
